@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="보관방법">
+        <item>선택하기</item>
+        <item>실온보관</item>
+        <item>냉장보관</item>
+        <item>냉동보관</item>
+
+    </string-array>
+
+
+</resources>
