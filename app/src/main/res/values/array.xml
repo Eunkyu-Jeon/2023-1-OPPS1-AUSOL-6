@@ -1,11 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--식품보관 방법 리스트-->
     <string-array name="보관방법">
         <item>선택하기</item>
         <item>실온보관</item>
         <item>냉장보관</item>
         <item>냉동보관</item>
 
+    </string-array>
+    <!--유통기한 알람시각 설정-->
+    <string-array name="알람시간">
+        <item>0시</item>
+        <item>1시</item>
+        <item>2시</item>
+        <item>3시</item>
+        <item>4시</item>
+        <item>5시</item>
+        <item>6시</item>
+        <item>7시</item>
+        <item>8시</item>
+        <item>9시</item>
+        <item>10시</item>
+        <item>11시</item>
+        <item>12시</item>
+        <item>13시</item>
+        <item>14시</item>
+        <item>15시</item>
+        <item>16시</item>
+        <item>17시</item>
+        <item>18시</item>
+        <item>19시</item>
+        <item>20시</item>
+        <item>21시</item>
+        <item>22시</item>
+        <item>23시</item>
     </string-array>
 
 

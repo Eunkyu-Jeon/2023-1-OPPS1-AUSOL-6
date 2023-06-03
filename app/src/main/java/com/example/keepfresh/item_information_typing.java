@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
+//식품정보 입력 페이지
 public class item_information_typing extends AppCompatActivity {
 
     private Button move_main_btn;

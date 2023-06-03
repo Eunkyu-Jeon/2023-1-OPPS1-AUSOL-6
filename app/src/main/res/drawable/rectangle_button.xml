@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--각진 하얀색 배경의 버튼-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
+    <corners
+        android:radius="0dp" />
+    <solid
+        android:color="#FFFFFF" />
+    </shape>
+</selector>
