@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#806EBEE3"
     tools:context=".setting_alarm">
 
     <TextView
@@ -107,7 +106,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:background="@drawable/button_design"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button13"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
