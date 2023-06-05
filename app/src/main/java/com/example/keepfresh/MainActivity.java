@@ -6,14 +6,16 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import com.example.keepfresh.databinding.ActivityMainBinding;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 네비게이션 관련 기본생성 코드
+/*
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -46,15 +49,32 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-
+*/
         /*************************************************
         * TODO 모델로 인식할 클래스에 대한 addFood 작업 필요   *
         ************************************************/
+        if(!MyApplication.initExp){
+            //ExpList 테이블 생성
+            /*
+            storage -> 0:상온 1:냉장 2:냉동
+
+            addFood("사과", 1, 21);
+            addFood("바나나", 2, 21);
+            addFood("오렌지", 1, 7);
+            addFood("쌈채소", 1, 4); //상추, 깻잎
+            addFood("뿌리채소", 1, 7); //감자, 고구마
+            addFood("버섯류", 1, 3);
+            */
+            // .json파일의 정보를 읽어서 ExpList 테이블 생성
+            parsingItemInfo();
+
+            MyApplication.initExp = true;
+        }
 
         realm = Realm.getDefaultInstance();
     }
     // expList에 정보 넣기 위한 포맷 설정(모델에서 인식할 클래스에 대한 유통기한)
-    public void addFood(final String name, final int storage, final int expire_date){
+    public void addExpList(String name, int recommend_storage, String[] storage_info, int[] exp_info){
 
         //이미 있으면 생성하지 않음
         if(exp_realm.where(ExpList.class).equalTo("name", name).findAll().size() != 0)
@@ -65,10 +85,57 @@ public class MainActivity extends AppCompatActivity {
             public void execute(Realm realm) {
                 ExpList expList = exp_realm.createObject(ExpList.class);
                 expList.setName(name);
-                expList.setStorage(storage);
-                expList.setExpireDate(expire_date);
+                expList.setRecommend_storage(recommend_storage);
+                for (int i = 0; i < 3; i++) {
+                    expList.setStorage_info(storage_info[i], i);
+                    expList.setExp_info(exp_info[i], i);
+                }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        exp_realm.close();
+        realm.close();
+    }
+
+    public void parsingItemInfo(){
+        String filePath = "./assets/itemInfo.json";
+
+        String name;
+        int recommendStore;
+        String[] storageInfoArray = new String[3];
+        int[] expInfoArray = new int[3];
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            StringBuilder jsonContent = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonContent.append(line);
+            }
+
+            JSONArray jsonArray = new JSONArray(jsonContent.toString());
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                name = ((JSONObject) jsonObject).optString("item_name");
+                recommendStore = jsonObject.optInt("recommend_store");
+                //JSONArray storageInfoArray = jsonObject.getJSONArray("storage_info");
+                storageInfoArray[0] = jsonObject.optString("storage_info_0");
+                storageInfoArray[1] = jsonObject.optString("storage_info_1");
+                storageInfoArray[2] = jsonObject.optString("storage_info_2");
+                expInfoArray[0] = jsonObject.optInt("exp_info_0");
+                expInfoArray[1] = jsonObject.optInt("exp_info_1");
+                expInfoArray[2] = jsonObject.optInt("exp_info_2");
+
+                addExpList(name, recommendStore, storageInfoArray, expInfoArray);
+                System.out.println(name);
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     // DB에 정보 추가할 튜플 생성
@@ -92,11 +159,11 @@ public class MainActivity extends AppCompatActivity {
                 ExpList expList = exp_realm.where(ExpList.class).equalTo("name", name).findAll().first();
 
                 /*******storage 설정*******/
-                if(expList.getStorage() == 0)
+                if(expList.getRecommend_storage() == 0)
                     itemList.setStorage(0);
-                else if(expList.getStorage() == 1)
+                else if(expList.getRecommend_storage() == 1)
                     itemList.setStorage(1);
-                else if(expList.getStorage() == 2)
+                else if(expList.getRecommend_storage() == 2)
                     itemList.setStorage(2);
                 else
                     itemList.setStorage(3);
@@ -104,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 /*******expire_date 설정*******/
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(itemList.getInputDate());
-                calendar.add(Calendar.DATE, expList.getExpireDate());
+                calendar.add(Calendar.DATE, expList.getExp_info(expList.getRecommend_storage()));
                 itemList.setExpireDate(calendar.getTime());
             }
         });
