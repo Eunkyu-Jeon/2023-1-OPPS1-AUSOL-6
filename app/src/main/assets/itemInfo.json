@@ -1,0 +1,32 @@
+[
+  {
+    "item_name" : "사과",
+    "storage_info_0" : "상온 보관시 3일 가능",
+    "storage_info_1" : "냉장 보관시 2일 가능",
+    "storage_info_2" : "냉동 보관시 1일 가능",
+    "exp_info_0" : 3,
+    "exp_info_1" : 2,
+    "exp_info_2" : 1,
+    "recommend_store" : 0
+  },
+  {
+    "item_name" : "바나나",
+    "storage_info_0" : "상온 보관시 3일 가능",
+    "storage_info_1" : "냉장 보관시 2일 가능",
+    "storage_info_2" : "냉동 보관시 1일 가능",
+    "exp_info_0" : 3,
+    "exp_info_1" : 2,
+    "exp_info_2" : 1,
+    "recommend_store" : 0
+  },
+  {
+    "item_name" : "오렌지",
+    "storage_info_0" : "상온 보관시 3일 가능",
+    "storage_info_1" : "냉장 보관시 2일 가능",
+    "storage_info_2" : "냉동 보관시 1일 가능",
+    "exp_info_0" : 3,
+    "exp_info_1" : 2,
+    "exp_info_2" : 1,
+    "recommend_store" : 0
+  }
+]
