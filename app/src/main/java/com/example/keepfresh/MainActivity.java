@@ -1,6 +1,8 @@
 package com.example.keepfresh;
 
+import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -14,20 +16,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity {
 
     private Realm realm;
     private Realm exp_realm;
-    SimpleDateFormat idFormat;
+    SimpleDateFormat idFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private LinearLayout container;
     private ActivityMainBinding binding;
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 네비게이션 관련 기본생성 코드
+        setContentView(R.layout.activity_main);
 /*
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -50,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 */
+        RealmConfiguration expConfig = new RealmConfiguration.Builder().allowWritesOnUiThread(true).build();
+        exp_realm = Realm.getInstance(expConfig);
+        realm = Realm.getDefaultInstance();
+
         /*************************************************
         * TODO 모델로 인식할 클래스에 대한 addFood 작업 필요   *
         ************************************************/
@@ -68,10 +77,16 @@ public class MainActivity extends AppCompatActivity {
             // .json파일의 정보를 읽어서 ExpList 테이블 생성
             parsingItemInfo();
 
+            // 테스트용
+            createTuple("사과", 0);
+            createTuple("바나나", 0);
+
+            showResult();
+
             MyApplication.initExp = true;
         }
 
-        realm = Realm.getDefaultInstance();
+
     }
     // expList에 정보 넣기 위한 포맷 설정(모델에서 인식할 클래스에 대한 유통기한)
     public void addExpList(String name, int recommend_storage, String[] storage_info, int[] exp_info){
@@ -102,44 +117,91 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void parsingItemInfo(){
-        String filePath = "./assets/itemInfo.json";
 
         String name;
         int recommendStore;
         String[] storageInfoArray = new String[3];
         int[] expInfoArray = new int[3];
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonContent.append(line);
+        AssetManager assetManager = getAssets();
+        try {
+            InputStream filePath = assetManager.open("itemInfo.json");
+
+            Log.i("aa",filePath.toString());
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(filePath))) {
+                StringBuilder jsonContent = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonContent.append(line);
+                }
+
+                JSONArray jsonArray = new JSONArray(jsonContent.toString());
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    name = ((JSONObject) jsonObject).optString("item_name");
+                    recommendStore = jsonObject.optInt("recommend_store");
+                    //JSONArray storageInfoArray = jsonObject.getJSONArray("storage_info");
+                    storageInfoArray[0] = jsonObject.optString("storage_info_0");
+                    storageInfoArray[1] = jsonObject.optString("storage_info_1");
+                    storageInfoArray[2] = jsonObject.optString("storage_info_2");
+                    expInfoArray[0] = jsonObject.optInt("exp_info_0");
+                    expInfoArray[1] = jsonObject.optInt("exp_info_1");
+                    expInfoArray[2] = jsonObject.optInt("exp_info_2");
+
+                    addExpList(name, recommendStore, storageInfoArray, expInfoArray);
+                    Log.i("aa",name);
+                }
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                Log.i("aa","parsing error");
             }
-
-            JSONArray jsonArray = new JSONArray(jsonContent.toString());
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                name = ((JSONObject) jsonObject).optString("item_name");
-                recommendStore = jsonObject.optInt("recommend_store");
-                //JSONArray storageInfoArray = jsonObject.getJSONArray("storage_info");
-                storageInfoArray[0] = jsonObject.optString("storage_info_0");
-                storageInfoArray[1] = jsonObject.optString("storage_info_1");
-                storageInfoArray[2] = jsonObject.optString("storage_info_2");
-                expInfoArray[0] = jsonObject.optInt("exp_info_0");
-                expInfoArray[1] = jsonObject.optInt("exp_info_1");
-                expInfoArray[2] = jsonObject.optInt("exp_info_2");
-
-                addExpList(name, recommendStore, storageInfoArray, expInfoArray);
-                System.out.println(name);
-            }
-        } catch (IOException | JSONException e) {
+        } catch (IOException e) {
             e.printStackTrace();
+            Log.i("aa","file error");
         }
     }
 
     // DB에 정보 추가할 튜플 생성
-    public void createTuple(final String name){
+    // 모델 이용한 유통기한 추가
+    public void createTuple(final String name, final int storage){
+        Log.i("cc", name);
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                ItemList itemList = realm.createObject(ItemList.class);
+
+                /*******input_date 설정*******/
+                itemList.setInputDate(new Date());
+                System.out.println(itemList.getInputDate());
+
+                /*******name 설정*******/
+                itemList.setName(name);
+
+                /*******id 설정*******/
+                String id = idFormat.format(itemList.getInputDate());
+                itemList.setId(id);
+
+                Log.i("bb", name);
+                Log.i("bb", exp_realm.where(ExpList.class).equalTo("name", name).findAll().toString());
+                //나머지 data는 expList table을 참고해서 설정함
+                ExpList expList = exp_realm.where(ExpList.class).equalTo("name", name).findAll().first();
+
+                /*******storage 설정*******/
+                itemList.setStorage(storage);
+
+                /*******expire_date 설정*******/
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(itemList.getInputDate());
+                calendar.add(Calendar.DATE, expList.getExp_info(1));
+                itemList.setExpireDate(calendar.getTime());
+            }
+        });
+    }
+
+    // DB에 정보 추가할 튜플 생성
+    // 유통기한 직접 입력시
+    public void createTuple(final String name, final int storage, final Date expireDate){
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
@@ -155,24 +217,11 @@ public class MainActivity extends AppCompatActivity {
                 String id = idFormat.format(itemList.getInputDate());
                 itemList.setId(id);
 
-                //나머지 data는 expList table을 참고해서 설정함
-                ExpList expList = exp_realm.where(ExpList.class).equalTo("name", name).findAll().first();
-
                 /*******storage 설정*******/
-                if(expList.getRecommend_storage() == 0)
-                    itemList.setStorage(0);
-                else if(expList.getRecommend_storage() == 1)
-                    itemList.setStorage(1);
-                else if(expList.getRecommend_storage() == 2)
-                    itemList.setStorage(2);
-                else
-                    itemList.setStorage(3);
+                itemList.setStorage(storage);
 
                 /*******expire_date 설정*******/
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(itemList.getInputDate());
-                calendar.add(Calendar.DATE, expList.getExp_info(expList.getRecommend_storage()));
-                itemList.setExpireDate(calendar.getTime());
+                itemList.setExpireDate(expireDate);
             }
         });
     }
