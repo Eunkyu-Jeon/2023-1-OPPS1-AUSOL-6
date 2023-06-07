@@ -22,7 +22,7 @@
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/nav_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -42,6 +42,13 @@
                 android:layout_margin="10dp"
                 android:orientation="vertical">
 
+
+                <TextView
+                    android:id="@+id/roomTitleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="상온"
+                    android:visibility="invisible"/>
             </LinearLayout>
 
             <!-- 냉장보관 리스트 -->
@@ -50,8 +57,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
+                android:minHeight="20px"
                 android:orientation="vertical">
 
+
+                <TextView
+                    android:id="@+id/refriTitleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="냉장"
+                    android:visibility="invisible"/>
             </LinearLayout>
 
             <!-- 냉동보관 리스트 -->
@@ -62,6 +77,12 @@
                 android:layout_margin="10dp"
                 android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/freezeTitleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="냉동"
+                    android:visibility="invisible"/>
             </LinearLayout>
 
 
