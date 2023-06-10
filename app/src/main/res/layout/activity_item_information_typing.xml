@@ -73,23 +73,25 @@
         tools:layout_editor_absoluteX="50dp"
         tools:layout_editor_absoluteY="400dp"></Spinner>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/move_main_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="취소"
         tools:layout_editor_absoluteX="90dp"
         tools:layout_editor_absoluteY="600dp"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"
+        android:background="@drawable/button_design"/>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/aa11"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="등록"
         tools:layout_editor_absoluteX="240dp"
         tools:layout_editor_absoluteY="600dp"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"
+        android:background="@drawable/button_design"/>
 
 
 
