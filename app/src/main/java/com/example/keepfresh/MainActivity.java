@@ -81,13 +81,15 @@ public class MainActivity extends AppCompatActivity {
             // .json파일의 정보를 읽어서 ExpList 테이블 생성
             parsingItemInfo();
 
+
+
             // 테스트 튜플 추가 테스트
             createTuple("사과", 0);
             createTuple("바나나", 1);
-            createTuple("귤", 0);
+            createTuple("귤", 2);
 
             MyApplication.initExp = true;
-            
+
             // Test 실행시마다 튜플 추가하기 때문에 지워주기
             //clearData();
 
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i("result", "endResult");
     }
+
     // expList에 정보 넣기 위한 포맷 설정(모델에서 인식할 클래스에 대한 유통기한)
     public void addExpList(String name, int recommend_storage, String[] storage_info, int[] exp_info){
 
@@ -150,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     name = ((JSONObject) jsonObject).optString("item_name");
                     recommendStore = jsonObject.optInt("recommend_store");
-                    //JSONArray storageInfoArray = jsonObject.getJSONArray("storage_info");
                     storageInfoArray[0] = jsonObject.optString("storage_info_0");
                     storageInfoArray[1] = jsonObject.optString("storage_info_1");
                     storageInfoArray[2] = jsonObject.optString("storage_info_2");
@@ -180,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
 
                 /*******input_date 설정*******/
                 itemList.setInputDate(new Date());
-                System.out.println(itemList.getInputDate());
 
                 /*******name 설정*******/
                 itemList.setName(name);
@@ -205,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // DB에 정보 추가할 튜플 생성
-    // 유통기한 직접 입력시
+    // TODO 유통기한 직접 입력시
     public void createTuple(final String name, final int storage, final Date expireDate){
         realm.executeTransaction(new Realm.Transaction() {
             @Override
@@ -236,35 +237,29 @@ public class MainActivity extends AppCompatActivity {
         RealmResults<ItemList> results = realm.where(ItemList.class).findAll();
 
         for(ItemList data : results){
-            Log.i("result", data.toString());
             if(data.getStorage() == 0) {
-                container = (LinearLayout) findViewById(R.id.room_list);
                 roomTitleText.setVisibility(View.VISIBLE);
             } else if(data.getStorage() == 1) {
-                container = (LinearLayout) findViewById(R.id.refri_list);
                 refriTitleText.setVisibility(View.VISIBLE);
             } else if(data.getStorage() == 2) {
-                container = (LinearLayout) findViewById(R.id.freeze_list);
                 freezeTitleText.setVisibility(View.VISIBLE);
             } else {
                 // 미분류
-                container = (LinearLayout) findViewById(R.id.freeze_list);
             }
+
+            setContainer(data.getStorage());
 
             final Button button = new Button(this);
             button.setText(data.toString());
             container.addView(button);
             final String id = data.getId();
-
-            Log.i("result", container.toString());
-
+            Log.i("ids", id);
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //삭제하시겠습니까? 메세지
                     //예 아니오 --> 예 클릭 시 해당 데이터베이스 삭제
                     showMessage(id, button);
-                    container.invalidate();
                 }
             });
         }
@@ -281,6 +276,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 //해당 id를 갖는 tuple 삭제
                 final RealmResults<ItemList> results = realm.where(ItemList.class).equalTo("id", id).findAll();
+
+                /**********************************************************************
+                 * TODO                                                               *
+                 * 현재는 id를 저장시간으로 해서 중복되는 데이터가 나오는데 id 저장방법 변경 필요  *
+                 * createTuple() 함수를 onCreate에서 한번에 실행해서 같은 시간이 나옴         *
+                 **********************************************************************/
+                setContainer((results.get(0).getStorage()));
+
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
@@ -290,7 +293,16 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+        builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
+
 
     public static void clearData() {
         RealmConfiguration config = new RealmConfiguration.Builder().build();
@@ -304,5 +316,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         realm.close();
+    }
+
+    public void setContainer(int storage) {
+        if(storage == 0) {
+            container = (LinearLayout) findViewById(R.id.room_list);
+        } else if(storage == 1) {
+            container = (LinearLayout) findViewById(R.id.refri_list);
+        } else if(storage == 2) {
+            container = (LinearLayout) findViewById(R.id.freeze_list);
+        } else {
+            // 미분류
+            container = (LinearLayout) findViewById(R.id.freeze_list);
+        }
     }
 }
