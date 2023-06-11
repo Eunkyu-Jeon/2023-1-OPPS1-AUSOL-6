@@ -186,16 +186,17 @@ public class MainActivity extends AppCompatActivity {
                 /*******name 설정*******/
                 itemList.setName(name);
 
+                /*******storage 설정*******/
+                itemList.setStorage(storage);
+
                 /*******id 설정*******/
-                String id = idFormat.format(itemList.getInputDate());
+                // 시간 + 저장방법
+                String id = idFormat.format(itemList.getInputDate()) + String.valueOf(itemList.getStorage());
                 itemList.setId(id);
 
                 //나머지 data는 expList table을 참고해서 설정함
                 ExpList expList = exp_realm.where(ExpList.class).equalTo("name", name).findAll().first();
-
-                /*******storage 설정*******/
-                itemList.setStorage(storage);
-
+                
                 /*******expire_date 설정*******/
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(itemList.getInputDate());
@@ -237,17 +238,10 @@ public class MainActivity extends AppCompatActivity {
         RealmResults<ItemList> results = realm.where(ItemList.class).findAll();
 
         for(ItemList data : results){
-            if(data.getStorage() == 0) {
-                roomTitleText.setVisibility(View.VISIBLE);
-            } else if(data.getStorage() == 1) {
-                refriTitleText.setVisibility(View.VISIBLE);
-            } else if(data.getStorage() == 2) {
-                freezeTitleText.setVisibility(View.VISIBLE);
-            } else {
-                // 미분류
-            }
 
+            //chkContainerOn(data.getStorage());
             setContainer(data.getStorage());
+            chkContainer();
 
             final Button button = new Button(this);
             button.setText(data.toString());
@@ -277,11 +271,6 @@ public class MainActivity extends AppCompatActivity {
                 //해당 id를 갖는 tuple 삭제
                 final RealmResults<ItemList> results = realm.where(ItemList.class).equalTo("id", id).findAll();
 
-                /**********************************************************************
-                 * TODO                                                               *
-                 * 현재는 id를 저장시간으로 해서 중복되는 데이터가 나오는데 id 저장방법 변경 필요  *
-                 * createTuple() 함수를 onCreate에서 한번에 실행해서 같은 시간이 나옴         *
-                 **********************************************************************/
                 setContainer((results.get(0).getStorage()));
 
                 realm.executeTransaction(new Realm.Transaction() {
@@ -289,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
                     public void execute(Realm realm) {
                         results.deleteFirstFromRealm();
                         container.removeView(button);
+                        chkContainer();
                     }
                 });
             }
@@ -329,5 +319,16 @@ public class MainActivity extends AppCompatActivity {
             // 미분류
             container = (LinearLayout) findViewById(R.id.freeze_list);
         }
+    }
+
+    public void chkContainer() {
+        if(container == null) {
+            return;
+        }
+
+        if(container.getChildCount() <= 1)
+            container.getChildAt(0).setVisibility(View.INVISIBLE);
+        else
+            container.getChildAt(0).setVisibility(View.VISIBLE);
     }
 }
