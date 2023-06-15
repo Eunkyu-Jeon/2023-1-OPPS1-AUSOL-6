@@ -45,7 +45,7 @@ public class ItemList extends RealmObject {
     }
 
     public void setInputDate(Date input_date) {
-        this.expire_date = expire_date;
+        this.input_date = input_date;
     }
 
     public Date getExpireDate() {
